@@ -98,7 +98,44 @@ func (h *TodosHandler) List(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
-func (h *TodosHandler) FindByID(w http.ResponseWriter, r *http.Request)  {}
+func (h *TodosHandler) FindByID(w http.ResponseWriter, r *http.Request) {
+	// Extract the resource ID using a regex
+	matches := TodoReWithID.FindStringSubmatch(r.URL.Path)
+	// Expect matches to be length >= 2 (full string + 1 matching group)
+	if len(matches) < 2 {
+		log.Printf("Cannot parse the request URL: %v", r.URL.Path)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	// Retrieve todo from the store
+	todo, err := h.store.FindByID(r.Context(), matches[1])
+	if err != nil {
+		// Special case of not-found Error
+		if err == ErrNotFound {
+			NotFoundHandler(w, r)
+			return
+		}
+
+		// Every other error
+		log.Printf("Cannot retrieve the todo: %v", err)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	// Convert the struct into JSON payload
+	jsonBytes, err := json.Marshal(todo)
+	if err != nil {
+		log.Printf("Cannot encode todo to JSON: %v", err)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	// Write the results
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonBytes)
+}
+
 func (h *TodosHandler) Update(w http.ResponseWriter, r *http.Request)    {}
 func (h *TodosHandler) Delete(w http.ResponseWriter, r *http.Request)    {}
 func (h *TodosHandler) DeleteAll(w http.ResponseWriter, r *http.Request) {}

@@ -22,6 +22,8 @@ type Repository struct {
 	conn *pgx.Conn
 }
 
+var ErrNotFound = fmt.Errorf("not found")
+
 // NewTodosRepository creates a new repository. It will receive a context and the PostgreSQL connection string.
 func NewTodosRepository(ctx context.Context, connStr string) (*Repository, error) {
 	conn, err := pgx.Connect(ctx, connStr)
@@ -69,6 +71,10 @@ func (r Repository) FindByID(ctx context.Context, id string) (Todo, error) {
 	var t Todo
 	err := r.conn.QueryRow(ctx, query, id).Scan(&t.ID, &t.Title, &t.Completed, &t.Order)
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return Todo{}, ErrNotFound
+		}
+
 		return Todo{}, err
 	}
 
