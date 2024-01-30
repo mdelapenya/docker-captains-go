@@ -136,6 +136,33 @@ func (h *TodosHandler) FindByID(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
-func (h *TodosHandler) Update(w http.ResponseWriter, r *http.Request)    {}
-func (h *TodosHandler) Delete(w http.ResponseWriter, r *http.Request)    {}
-func (h *TodosHandler) DeleteAll(w http.ResponseWriter, r *http.Request) {}
+func (h *TodosHandler) Update(w http.ResponseWriter, r *http.Request) {}
+
+func (h *TodosHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	matches := TodoReWithID.FindStringSubmatch(r.URL.Path)
+	if len(matches) < 2 {
+		log.Printf("Cannot parse the request URL: %v", r.URL.Path)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	if err := h.store.DeleteByID(r.Context(), matches[1]); err != nil {
+		// we do not want to return a 404 error if the todo is not found
+		// to avoid leaking information about the existence of a resource
+		log.Printf("Cannot delete the todo: %v", err)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *TodosHandler) DeleteAll(w http.ResponseWriter, r *http.Request) {
+	if err := h.store.DeleteAll(r.Context()); err != nil {
+		log.Printf("Cannot delete all todos: %v", err)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
