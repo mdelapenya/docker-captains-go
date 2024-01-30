@@ -165,21 +165,25 @@ func (r Repository) List(ctx context.Context) ([]Todo, error) {
 func (r Repository) Update(ctx context.Context, t Todo) error {
 	existingTodo, err := r.FindByID(ctx, t.ID)
 	if err != nil {
-		return fmt.Errorf("todo not found: %w", err)
+		return fmt.Errorf("todo [%+v] not found: %w", t, err)
 	}
 
-	existingTodo.Title = t.Title
+	if t.Title != "" {
+		existingTodo.Title = t.Title
+	}
+
 	existingTodo.Completed = t.Completed
-	existingTodo.Order = t.Order
+
+	if t.Order > 0 {
+		existingTodo.Order = t.Order
+	}
 
 	query := "UPDATE todos SET title = $2, completed = $3, order_number = $4 WHERE id = $1"
 
-	err = r.pool.QueryRow(ctx, query, t.ID, existingTodo.Title, existingTodo.Completed, existingTodo.Order).Scan()
+	_, err = r.pool.Exec(ctx, query, t.ID, existingTodo.Title, existingTodo.Completed, existingTodo.Order)
 	if err != nil {
 		return err
 	}
-
-	t.Url = t.URL()
 
 	return nil
 }
