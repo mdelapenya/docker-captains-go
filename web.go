@@ -79,7 +79,25 @@ func (h *TodosHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *TodosHandler) List(w http.ResponseWriter, r *http.Request)      {}
+func (h *TodosHandler) List(w http.ResponseWriter, r *http.Request) {
+	resources, err := h.store.List(r.Context())
+	if err != nil {
+		log.Printf("Cannot retrieve todos: %v", err)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	jsonBytes, err := json.Marshal(resources)
+	if err != nil {
+		log.Printf("Cannot encode todos to JSON: %v", err)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonBytes)
+}
+
 func (h *TodosHandler) FindByID(w http.ResponseWriter, r *http.Request)  {}
 func (h *TodosHandler) Update(w http.ResponseWriter, r *http.Request)    {}
 func (h *TodosHandler) Delete(w http.ResponseWriter, r *http.Request)    {}
