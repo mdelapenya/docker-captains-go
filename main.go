@@ -47,9 +47,11 @@ func main() {
 
 	todosHandler := NewTodosHandler(store)
 
+	handlers := logMiddleware(todosHandler)
+
 	// Register the routes and handlers
-	mux.Handle("/todos", todosHandler)
-	mux.Handle("/todos/", todosHandler)
+	mux.Handle("/todos", handlers)
+	mux.Handle("/todos/", handlers)
 
 	// Run the server
 	http.ListenAndServe(":8080", mux)

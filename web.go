@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"time"
 )
 
 var (
@@ -27,6 +28,18 @@ func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("404 Not Found"))
+}
+
+func logMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		begin := time.Now().UnixMilli()
+		next.ServeHTTP(w, r)
+		ns := time.Now().UnixMilli() - begin
+
+		log.Printf("%s [%d] - %s\n", r.Method, ns, r.URL.Path)
+	}
+
+	return http.HandlerFunc(fn)
 }
 
 type TodosHandler struct {
@@ -74,7 +87,7 @@ func (h *TodosHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Call the store to add the recipe
+	// Call the store to add the todo
 	if err := h.store.Create(r.Context(), &todo); err != nil {
 		log.Printf("Cannot create the todo: %v", err)
 		InternalServerErrorHandler(w, r)
