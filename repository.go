@@ -47,7 +47,14 @@ func (r Repository) Create(ctx context.Context, t *Todo) error {
 		t.ID = uuid.NewString()
 	}
 
-	return r.conn.QueryRow(ctx, query, t.ID, t.Title, t.Completed, t.Order).Scan(&t.ID)
+	err := r.conn.QueryRow(ctx, query, t.ID, t.Title, t.Completed, t.Order).Scan(&t.ID)
+	if err != nil {
+		return err
+	}
+
+	t.Url = t.URL()
+
+	return nil
 }
 
 // DeleteByID deletes a todo from the database by its ID.
@@ -95,6 +102,9 @@ func (r Repository) List(ctx context.Context) ([]Todo, error) {
 		if err != nil {
 			return ts, err
 		}
+
+		t.Url = t.URL()
+
 		ts = append(ts, t)
 	}
 
@@ -115,5 +125,12 @@ func (r Repository) Update(ctx context.Context, t Todo) error {
 
 	query := "UPDATE todos SET title = $2, completed = $3, order_number = $4 WHERE id = $1"
 
-	return r.conn.QueryRow(ctx, query, t.ID, existingTodo.Title, existingTodo.Completed, existingTodo.Order).Scan()
+	err = r.conn.QueryRow(ctx, query, t.ID, existingTodo.Title, existingTodo.Completed, existingTodo.Order).Scan()
+	if err != nil {
+		return err
+	}
+
+	t.Url = t.URL()
+
+	return nil
 }
