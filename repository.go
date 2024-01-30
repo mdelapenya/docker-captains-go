@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -39,6 +40,10 @@ func NewTodosRepository(ctx context.Context, connStr string) (*Repository, error
 // It uses pointer semantics at the todo parameter to avoid copying the struct, modifying it and returning it.
 func (r Repository) Create(ctx context.Context, t *Todo) error {
 	query := "INSERT INTO todos (id, title, completed, order_number) VALUES ($1, $2, $3, $4) returning id"
+
+	if t.ID == "" {
+		t.ID = uuid.NewString()
+	}
 
 	return r.conn.QueryRow(ctx, query, t.ID, t.Title, t.Completed, t.Order).Scan(&t.ID)
 }
