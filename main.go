@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 )
 
 type Todo struct {
@@ -24,9 +27,16 @@ func main() {
 	// register handler for the static files
 	mux.Handle("/", FileSystemHandler)
 
+	store, err := NewTodosRepository(context.Background(), os.Getenv("POSTGRESQL_URL"))
+	if err != nil {
+		log.Fatalf("Cannot create a Todos repository. Exiting")
+	}
+
+	todosHandler := NewTodosHandler(store)
+
 	// Register the routes and handlers
-	mux.Handle("/todos", &TodosHandler{})
-	mux.Handle("/todos/", &TodosHandler{})
+	mux.Handle("/todos", todosHandler)
+	mux.Handle("/todos/", todosHandler)
 
 	// Run the server
 	http.ListenAndServe(":8080", mux)
