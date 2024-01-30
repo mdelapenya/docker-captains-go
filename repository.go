@@ -70,19 +70,23 @@ func (r Repository) FindByID(ctx context.Context, id string) (Todo, error) {
 	return t, nil
 }
 
-// List retrieves all todo from the database (no filters nor pagination).
+// List retrieves all todos from the database (no filters nor pagination).
 func (r Repository) List(ctx context.Context) ([]Todo, error) {
 	query := "SELECT id, title, completed, order_number FROM todos"
 
-	var ts []Todo
 	rows, err := r.conn.Query(ctx, query)
 	if err != nil {
 		return []Todo{}, err
 	}
 
-	err = rows.Scan(ts)
-	if err != nil {
-		return []Todo{}, err
+	var ts []Todo
+	for rows.Next() {
+		var t Todo
+		err := rows.Scan(&t.ID, &t.Title, &t.Completed, &t.Order)
+		if err != nil {
+			return ts, err
+		}
+		ts = append(ts, t)
 	}
 
 	return ts, nil
