@@ -19,6 +19,11 @@ func InternalServerErrorHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("500 Internal Server Error"))
 }
 
+func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	w.Write([]byte("405 " + r.Method + " Not Allowed"))
+}
+
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("404 Not Found"))
@@ -55,6 +60,7 @@ func (h *TodosHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.DeleteAll(w, r)
 		return
 	default:
+		MethodNotAllowedHandler(w, r)
 		return
 	}
 }
