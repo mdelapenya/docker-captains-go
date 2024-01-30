@@ -52,16 +52,14 @@ func (r Repository) Create(ctx context.Context, t *Todo) error {
 
 // DeleteByID deletes a todo from the database by its ID.
 func (r Repository) DeleteByID(ctx context.Context, id string) error {
-	query := "DELETE FROM todos WHERE id = $1"
-
-	return r.conn.QueryRow(ctx, query, id).Scan()
+	_, err := r.conn.Exec(ctx, "DELETE FROM todos WHERE id = $1", id)
+	return err
 }
 
 // DeleteAll deletes all todo from the database.
 func (r Repository) DeleteAll(ctx context.Context) error {
-	query := "DELETE FROM todos"
-
-	return r.conn.QueryRow(ctx, query).Scan()
+	_, err := r.conn.Exec(ctx, "DELETE FROM todos")
+	return err
 }
 
 // FindByID retrieves a todo from the database by its ID.
