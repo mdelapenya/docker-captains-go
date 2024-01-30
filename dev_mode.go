@@ -10,9 +10,11 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -51,6 +53,8 @@ func init() {
 	App.UsersConnection = connStr
 	log.Println("Users database started successfully")
 
+	createSamepleTodos(connStr)
+
 	// register a graceful shutdown to stop the dependencies when the application is stopped
 	// only in development mode
 	var gracefulStop = make(chan os.Signal)
@@ -66,6 +70,35 @@ func init() {
 		}
 		os.Exit(0)
 	}()
+}
+
+func createSamepleTodos(connStr string) {
+	todoRepository, err := NewTodosRepository(context.Background(), connStr)
+	if err != nil {
+		log.Fatalf("Cannot create a Todos repository. Exiting")
+	}
+
+	title := "Set up and run with Testcontainers desktop app and Testcontainers Cloud!"
+	cli, err := testcontainers.NewDockerClient()
+	if err != nil {
+		log.Fatalf("Cannot create a Docker client. Exiting")
+	}
+
+	info, err := cli.Info(context.Background())
+	if err != nil {
+		log.Fatalf("Cannot get Docker info. Exiting")
+	}
+
+	serverVersion := info.ServerVersion
+
+	if strings.Contains(serverVersion, "testcontainerscloud") {
+		title = "I need your root, your RAM, and your CPU cycles"
+	}
+
+	todoRepository.Create(context.Background(), &Todo{
+		ID:    uuid.NewString(),
+		Title: title,
+	})
 }
 
 // helper function to stop the dependencies
