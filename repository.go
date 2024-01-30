@@ -34,11 +34,11 @@ func NewTodosRepository(ctx context.Context, connStr string) (*Repository, error
 	}, nil
 }
 
-// Create creates a new taTodok in the database.
+// Create creates a new todo in the database.
 // It uses value semantics at the method receiver to avoid mutating the original repository.
 // It uses pointer semantics at the todo parameter to avoid copying the struct, modifying it and returning it.
 func (r Repository) Create(ctx context.Context, t *Todo) error {
-	query := "INSERT INTO todos (id, title, completed, order) VALUES ($1, $2, $3, $4) returning id"
+	query := "INSERT INTO todos (id, title, completed, order_number) VALUES ($1, $2, $3, $4) returning id"
 
 	return r.conn.QueryRow(ctx, query, t.ID, t.Title, t.Completed, t.Order).Scan(&t.ID)
 }
@@ -59,7 +59,7 @@ func (r Repository) DeleteAll(ctx context.Context) error {
 
 // FindByID retrieves a todo from the database by its ID.
 func (r Repository) FindByID(ctx context.Context, id string) (Todo, error) {
-	query := "SELECT id, title, completed, order FROM todos WHERE id = $1"
+	query := "SELECT id, title, completed, order_number FROM todos WHERE id = $1"
 
 	var t Todo
 	err := r.conn.QueryRow(ctx, query, id).Scan(&t.ID, &t.Title, &t.Completed, &t.Order)
@@ -72,7 +72,7 @@ func (r Repository) FindByID(ctx context.Context, id string) (Todo, error) {
 
 // List retrieves all todo from the database (no filters nor pagination).
 func (r Repository) List(ctx context.Context) ([]Todo, error) {
-	query := "SELECT id, title, completed, order FROM todos"
+	query := "SELECT id, title, completed, order_number FROM todos"
 
 	var ts []Todo
 	rows, err := r.conn.Query(ctx, query)
@@ -100,7 +100,7 @@ func (r Repository) Update(ctx context.Context, t Todo) error {
 	existingTodo.Completed = t.Completed
 	existingTodo.Order = t.Order
 
-	query := "UPDATE todos SET title = $2, completed = $3, order = $4 WHERE id = $1"
+	query := "UPDATE todos SET title = $2, completed = $3, order_number = $4 WHERE id = $1"
 
 	return r.conn.QueryRow(ctx, query, t.ID, existingTodo.Title, existingTodo.Completed, existingTodo.Order).Scan()
 }
