@@ -45,7 +45,7 @@ func (h *TodosHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodGet && TodoReWithID.MatchString(r.URL.Path):
 		h.FindByID(w, r)
 		return
-	case r.Method == http.MethodPut && TodoReWithID.MatchString(r.URL.Path):
+	case r.Method == http.MethodPatch && TodoReWithID.MatchString(r.URL.Path):
 		h.Update(w, r)
 		return
 	case r.Method == http.MethodDelete && TodoReWithID.MatchString(r.URL.Path):
