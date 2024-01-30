@@ -95,6 +95,12 @@ func (r Repository) Create(ctx context.Context, t *Todo) error {
 	if t.ID == "" {
 		t.ID = uuid.NewString()
 	}
+	if t.Completed == nil {
+		t.Completed = new(bool)
+	}
+	if t.Order == nil {
+		t.Order = new(int)
+	}
 
 	err := r.pool.QueryRow(ctx, query, t.ID, t.Title, t.Completed, t.Order).Scan(&t.ID)
 	if err != nil {
@@ -130,6 +136,13 @@ func (r Repository) FindByID(ctx context.Context, id string) (Todo, error) {
 		}
 
 		return Todo{}, err
+	}
+
+	if t.Completed == nil {
+		t.Completed = new(bool)
+	}
+	if t.Order == nil {
+		t.Order = new(int)
 	}
 
 	return t, nil
@@ -172,15 +185,17 @@ func (r Repository) Update(ctx context.Context, t Todo) error {
 		existingTodo.Title = t.Title
 	}
 
-	existingTodo.Completed = t.Completed
+	if t.Completed != nil {
+		existingTodo.Completed = t.Completed
+	}
 
-	if t.Order > 0 {
+	if t.Order != nil {
 		existingTodo.Order = t.Order
 	}
 
 	query := "UPDATE todos SET title = $2, completed = $3, order_number = $4 WHERE id = $1"
 
-	_, err = r.pool.Exec(ctx, query, t.ID, existingTodo.Title, existingTodo.Completed, existingTodo.Order)
+	_, err = r.pool.Exec(ctx, query, t.ID, existingTodo.Title, *existingTodo.Completed, *existingTodo.Order)
 	if err != nil {
 		return err
 	}

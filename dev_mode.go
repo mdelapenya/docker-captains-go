@@ -95,9 +95,14 @@ func createSamepleTodos(connStr string) {
 		title = "I need your root, your RAM, and your CPU cycles"
 	}
 
+	var completed bool = false
+	var order int = 1
+
 	todoRepository.Create(context.Background(), &Todo{
-		ID:    uuid.NewString(),
-		Title: title,
+		ID:        uuid.NewString(),
+		Title:     title,
+		Completed: &completed,
+		Order:     &order,
 	})
 }
 
