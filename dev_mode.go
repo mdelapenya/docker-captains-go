@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"syscall"
 	"time"
 
@@ -23,6 +22,12 @@ import (
 
 func init() {
 	ctx := context.Background()
+
+	//localstackContainer, err := localstack.RunContainer(ctx,
+	//	testcontainers.WithImage("localstack/localstack:3.1"),
+	//)
+
+	//localstackContainer.Endpoint()
 
 	c, err := postgres.RunContainer(ctx,
 		testcontainers.WithImage("postgres:15.3-alpine"),
@@ -53,7 +58,7 @@ func init() {
 	App.UsersConnection = connStr
 	log.Println("Users database started successfully")
 
-	createSamepleTodos(connStr)
+	createSampleTodos(connStr)
 
 	// register a graceful shutdown to stop the dependencies when the application is stopped
 	// only in development mode
@@ -72,29 +77,13 @@ func init() {
 	}()
 }
 
-func createSamepleTodos(connStr string) {
+func createSampleTodos(connStr string) {
 	todoRepository, err := NewTodosRepository(context.Background(), connStr)
 	if err != nil {
 		log.Fatalf("Cannot create a Todos repository. Exiting")
 	}
 
-	title := "Set up and run with Testcontainers desktop app and Testcontainers Cloud!"
-	cli, err := testcontainers.NewDockerClient()
-	if err != nil {
-		log.Fatalf("Cannot create a Docker client. Exiting")
-	}
-
-	info, err := cli.Info(context.Background())
-	if err != nil {
-		log.Fatalf("Cannot get Docker info. Exiting")
-	}
-
-	serverVersion := info.ServerVersion
-
-	if strings.Contains(serverVersion, "testcontainerscloud") {
-		title = "I need your root, your RAM, and your CPU cycles"
-	}
-
+	var title = "I need your root, your RAM, and your CPU cycles"
 	var completed bool = false
 	var order int = 1
 
