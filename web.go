@@ -94,8 +94,17 @@ func (h *TodosHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set the status code to 200
-	w.WriteHeader(http.StatusOK)
+	// Set the status code to 201
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Add("Location", todo.URL())
+
+	jsonBytes, err := json.Marshal(todo)
+	if err != nil {
+		log.Printf("Cannot encode todos to JSON: %v", err)
+		InternalServerErrorHandler(w, r)
+		return
+	}
+	w.Write(jsonBytes)
 }
 
 func (h *TodosHandler) List(w http.ResponseWriter, r *http.Request) {

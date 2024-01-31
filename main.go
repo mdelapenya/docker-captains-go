@@ -17,7 +17,7 @@ type Todo struct {
 }
 
 func (t *Todo) URL() string {
-	return fmt.Sprintf("/todos/%s", t.ID)
+	return fmt.Sprintf("http://localhost:8080/todos/%s", t.ID)
 }
 
 type TodoApp struct {
