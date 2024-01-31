@@ -47,7 +47,7 @@ func main() {
 
 	todosHandler := NewTodosHandler(store)
 
-	handlers := logMiddleware(todosHandler)
+	handlers := corsMiddleware(logMiddleware(todosHandler))
 
 	// Register the routes and handlers
 	mux.Handle("/todos", handlers)

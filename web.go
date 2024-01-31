@@ -30,6 +30,19 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("404 Not Found"))
 }
 
+func corsMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(
+			"Access-Control-Allow-Headers",
+			"Access-Control-Allow-Headers, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method,",
+		)
+
+		next.ServeHTTP(w, r)
+	}
+
+	return http.HandlerFunc(fn)
+}
+
 func logMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		begin := time.Now().UnixMilli()
