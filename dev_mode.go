@@ -63,7 +63,8 @@ func init() {
 	// register a graceful shutdown to stop the dependencies when the application is stopped
 	// only in development mode
 	var gracefulStop = make(chan os.Signal)
-	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(gracefulStop, syscall.SIGTERM)
+	signal.Notify(gracefulStop, syscall.SIGINT)
 	go func() {
 		// also use the shutdown function when the SIGTERM or SIGINT signals are received
 		sig := <-gracefulStop
