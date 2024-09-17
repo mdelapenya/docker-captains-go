@@ -23,14 +23,14 @@ import (
 func init() {
 	ctx := context.Background()
 
-	//localstackContainer, err := localstack.RunContainer(ctx,
-	//	testcontainers.WithImage("localstack/localstack:3.1"),
+	//localstackContainer, err := localstack.Run(ctx,
+	//	"localstack/localstack:3.1",
 	//)
 
 	//localstackContainer.Endpoint()
 
-	c, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:15.3-alpine"),
+	c, err := postgres.Run(ctx,
+		"postgres:15.3-alpine",
 		postgres.WithInitScripts(filepath.Join(".", "testdata", "schema.sql")),
 		postgres.WithDatabase("todos"),
 		postgres.WithUsername("postgres"),
