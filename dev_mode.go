@@ -23,14 +23,14 @@ import (
 func init() {
 	ctx := context.Background()
 
-	//localstackContainer, err := localstack.RunContainer(ctx,
-	//	testcontainers.WithImage("localstack/localstack:3.1"),
+	//localstackContainer, err := localstack.Run(ctx,
+	//	"localstack/localstack:3.1",
 	//)
 
 	//localstackContainer.Endpoint()
 
-	c, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:15.3-alpine"),
+	c, err := postgres.Run(ctx,
+		"postgres:15.3-alpine",
 		postgres.WithInitScripts(filepath.Join(".", "testdata", "schema.sql")),
 		postgres.WithDatabase("todos"),
 		postgres.WithUsername("postgres"),
@@ -63,8 +63,7 @@ func init() {
 	// register a graceful shutdown to stop the dependencies when the application is stopped
 	// only in development mode
 	var gracefulStop = make(chan os.Signal)
-	signal.Notify(gracefulStop, syscall.SIGTERM)
-	signal.Notify(gracefulStop, syscall.SIGINT)
+	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		// also use the shutdown function when the SIGTERM or SIGINT signals are received
 		sig := <-gracefulStop
